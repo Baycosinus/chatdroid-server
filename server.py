@@ -2,6 +2,7 @@ import sys
 import socket
 import db
 from threading import Thread
+import json
 
 
 HOST = "192.168.1.6"
@@ -23,6 +24,7 @@ def listen():
             TARGET = addr[0]
             buf = conn.recv(1024)
             msg = buf.decode()
+            # msg = json.loads(msg)
             process(addr[0], msg)
     except Exception as e:
         print('Listen Error: ' + str(e)) 
@@ -46,6 +48,7 @@ def send():
 def process(addr, msg):
     global RESPONSE
     print(addr + ":" + msg)
+    # Load JSON here instead of splitting the text.
     hash = msg.split(':')
     command = hash[0]
 
