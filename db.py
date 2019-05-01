@@ -1,5 +1,5 @@
 import mysql.connector
-import user
+import user, json
 
 def parse_credentials():
     file = open("credentials.dat", 'r')
@@ -30,14 +30,13 @@ def login(username,password, ip):
     sql1 = "SELECT UID FROM user WHERE USERNAME='" + \
         username + "' AND PASSWORD=SHA('" + password + "')"
     response = run_query(sql1)
-    sql2 = "UPDATE user SET STATUS=true, IP='" + ip + "' WHERE UID='" + \
-        str(response[0][0]) + "'"
-    run_query(sql2)
-
     if(len(response) > 0):
-        return True;
+        sql2 = "UPDATE user SET STATUS=true, IP='" + ip + "' WHERE UID='" + \
+            str(response[0][0]) + "'"
+        run_query(sql2)
+        return response[0][0]
     else:
-        return False;
+        return 0
 def logout(uid):
     sql = "UPDATE user SET STATUS=false WHERE UID='" + str(uid) + "'"
     run_query(sql)
@@ -67,6 +66,7 @@ def run_query(sql):
         print("Exception:" + str(e))
         return str(e)
 
+
 #print(register("baycosinus", "b4yc051nu5"))
 #login("baycosinus","b4yc051nu5", "192.168.1.1")
 #login("test1", "pass1", "192.168.1.3")
@@ -74,6 +74,9 @@ def run_query(sql):
 #result = get_online_list()
 #for i in result:
 #    print(i.username)
-
-result = check_available("werwer")
+RESPONSE = get_online_list()
+result = {}
+for i in range(0,len(RESPONSE)):
+    line = {i:{"username": RESPONSE[i].username, "ip": RESPONSE[i].ip}}
+    result.update(line)
 print(result)

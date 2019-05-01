@@ -1,4 +1,4 @@
-import sys
+import sys, os
 import socket
 import db
 from threading import Thread
@@ -24,22 +24,21 @@ def listen():
             TARGET = addr[0]
             buf = conn.recv(1024)
             msg = buf.decode()
-            # msg = json.loads(msg)
-            process(addr[0], msg)
+            process(TARGET, msg)
     except Exception as e:
-        print('Listen Error: ' + str(e)) 
-        sys.exit()
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print(exc_type, fname, exc_tb.tb_lineno)
 
 
 def send():
     global TARGET
     global RESPONSE
-    print("Target: " + str(TARGET))
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.connect((TARGET, PORT))
-        sock.sendto(RESPONSE.encode(), (TARGET, PORT))
-        print("Message: " + RESPONSE)
+        sock.sendto(str(RESPONSE).encode(), (TARGET, PORT))
+        print("Result: " + str(RESPONSE))
         sock.close()
     except Exception as e:
         print("Send Error: " + str(e))
@@ -47,27 +46,36 @@ def send():
 
 def process(addr, msg):
     global RESPONSE
-    print(addr + ":" + msg)
+    print(addr + ":" + str(msg))
     # Load JSON here instead of splitting the text.
-    hash = msg.split(':')
-    command = hash[0]
-
-    if (command == "Register"):
-        username = hash[1]
-        password = hash[2]
+    j = json.loads(msg)
+    
+    if (j["type"] == "register"):
+        username = j["from"]["username"]
+        password = j["from"]["password"]
         db.register(username,password)
-    elif (command == "CheckAvailable"):
-        username = hash[1]
+    elif (j["type"] == "check_available"):
+        username = j["from"]["username"]
         RESPONSE = str(db.check_available(username))
         sthread = Thread(target=send)
         sthread.start()
         sthread.join()
-    elif (command == "Login"):
-        username = hash[1]
-        password = hash[2]
-        ip = addr[0]
+    elif (j["type"] == "login"):
+        username = j["from"]["username"]
+        password = j["from"]["password"]
+        ip = addr
         RESPONSE = db.login(username,password,ip)
         sthread = Thread(target = send)
+        sthread.start()
+        sthread.join()
+    elif (j["type"] == "get_online"):
+        RESPONSE = get_online_list()
+        result = {}
+        for i in range(0, len(RESPONSE)):
+            line = {i: {"username": RESPONSE[i].username, "ip": RESPONSE[i].ip}}
+            result.update(line)
+        RESPONSE = result
+        sthread = Thread(target=send)
         sthread.start()
         sthread.join()
     return 0
