@@ -74,9 +74,3 @@ def run_query(sql):
 #result = get_online_list()
 #for i in result:
 #    print(i.username)
-RESPONSE = get_online_list()
-result = {}
-for i in range(0,len(RESPONSE)):
-    line = {i:{"username": RESPONSE[i].username, "ip": RESPONSE[i].ip}}
-    result.update(line)
-print(result)
