@@ -65,12 +65,3 @@ def run_query(sql):
     except mysql.connector.Error as e:
         print("Exception:" + str(e))
         return str(e)
-
-
-#print(register("baycosinus", "b4yc051nu5"))
-#login("baycosinus","b4yc051nu5", "192.168.1.1")
-#login("test1", "pass1", "192.168.1.3")
-#logout(3)
-#result = get_online_list()
-#for i in result:
-#    print(i.username)

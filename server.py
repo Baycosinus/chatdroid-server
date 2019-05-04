@@ -49,7 +49,6 @@ def process(addr, msg):
     print(addr + ":" + str(msg))
     # Load JSON here instead of splitting the text.
     j = json.loads(msg)
-    
     if (j["type"] == "register"):
         username = j["from"]["username"]
         password = j["from"]["password"]
@@ -68,26 +67,31 @@ def process(addr, msg):
         sthread = Thread(target = send)
         sthread.start()
         sthread.join()
+    elif(j["type"] == "logout"):
+        db.logout(j["from"]["id"])
     elif (j["type"] == "get_online"):
-        RESPONSE = get_online_list()
-        result = {}
-        for i in range(0, len(RESPONSE)):
-            line = {i: {"username": RESPONSE[i].username, "ip": RESPONSE[i].ip}}
-            result.update(line)
-        RESPONSE = result
+        id = j["from"]["id"]
+        RESPONSE = db.get_online_list()
+        result = []
+        for i in RESPONSE:
+            if (i.id != id):
+                line = {
+                    "userID": i.id, 
+                    "username": i.username,
+                    "ip": i.ip
+                    }
+                result.append(line)
+
+       
+        RESPONSE = {"online_users": []}
+        RESPONSE["online_users"] = result
+        RESPONSE = json.dumps(RESPONSE)
         sthread = Thread(target=send)
         sthread.start()
         sthread.join()
     return 0
     
 if __name__ == '__main__':
-    # listen() fonksiyonu için bir thread hazırladık.
     lthread = Thread(target=listen)
-    # send() fonksiyonu için bir thread hazırladık.
-    #sthread = Thread(target=send)
-
     lthread.start()  # threadleri başlatıyoruz.
-    #sthread.start()  # ''
-
     lthread.join()  # threadleri ana thread'e (main fonksiyonuna bağlıyoruz)
-    #sthread.join()  # böylece listen ve send threadleri sonlanmadan ana thread kapanmıyor. BİZ BİTTİ DEMEDEN BİTMEZ AGA!

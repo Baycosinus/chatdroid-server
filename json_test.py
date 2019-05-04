@@ -1,4 +1,4 @@
-import json
+import json,db
 
 def parse(j):
     string = json.dumps(j)
@@ -11,10 +11,10 @@ def convert(string):
 
 
 j = {
+    "id": "3",
     "username": "baycosinus",
     "password": "pass"
     }
 
 
-q = json.dumps("")
-print(q)
+print(json.dumps(RESPONSE)["online_users"])
