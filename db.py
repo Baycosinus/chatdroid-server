@@ -49,6 +49,24 @@ def get_online_list():
         u = user.user(row[0],row[1],None,row[3],row[4])
         list.append(u)
     return list
+def get_user_ip(username):
+    sql = "SELECT ip FROM user where username='" + username + "'"
+    result = run_query(sql)
+    return result[0][0]
+
+def set_message(f, t, m):
+    sql = "INSERT INTO MESSAGE (fusername, tusername, message) VALUES('" + f + "','" + t + "','" + m + "')"
+    run_query(sql)
+
+def get_message(f,t):
+    sql1 = "SELECT * from message Where fusername='" + f + "' and tusername='" + t + "'"
+    result1 = run_query(sql1)
+    sql2 = "SELECT * from message where fusername='" + t + "' and tusername='" + f + "'"
+    result2 = run_query(sql2)
+    result = result1 + result2
+    print(result)
+    return result
+
 
 def run_query(sql):
     response = ""
@@ -65,3 +83,6 @@ def run_query(sql):
     except mysql.connector.Error as e:
         print("Exception:" + str(e))
         return str(e)
+
+
+get_message("onur", "onur3")

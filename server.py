@@ -5,7 +5,7 @@ from threading import Thread
 import json
 
 
-HOST = "192.168.1.105"
+HOST = "192.168.1.6"
 TARGET = "0.0.0.0"
 PORT = 8888
 RESPONSE = ""
@@ -31,7 +31,6 @@ def listen():
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         print(exc_type, fname, exc_tb.tb_lineno)
 
-
 def send():
     global TARGET
     global RESPONSE
@@ -47,7 +46,7 @@ def send():
 def process(addr, msg):
     global RESPONSE
     print(addr + ":" + str(msg))
-    # Load JSON here instead of splitting the text.
+
     j = json.loads(msg)
 
     try:
@@ -83,11 +82,24 @@ def process(addr, msg):
                         "ip": i.ip
                         }
                     result.append(line)
-
         
             RESPONSE = {"online_users": []}
             RESPONSE["online_users"] = result
             RESPONSE = json.dumps(RESPONSE)
+            sthread = Thread(target=send)
+            sthread.start()
+            sthread.join()
+        elif (j["type"] == "send_message"):
+            f = j["from"]["username"]
+            t = j["to"]["username"]
+            m = j["message"]
+
+            db.set_message(f,t,m)
+        elif (j["type"] == "receive_message"):
+            f = j["from"]["username"]
+            t = j["to"]["username"]
+            
+            RESPONSE = db.get_message(f,t)
             sthread = Thread(target=send)
             sthread.start()
             sthread.join()
